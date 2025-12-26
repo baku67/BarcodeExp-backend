@@ -1,0 +1,59 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: app
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U app -d app"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  # Creation et migration de la base de données (attention PROD voir readme)
+  migrate:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - ./backend:/app:cached
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      DATABASE_URL: "postgresql://app:app@db:5432/app?serverVersion=16&charset=utf8"
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -lc "
+      php bin/console doctrine:database:create --if-not-exists &&
+      php bin/console doctrine:migrations:migrate --no-interaction
+      "
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app:cached
+    environment:
+      APP_ENV: dev
+      APP_DEBUG: "1"
+      DATABASE_URL: "postgresql://app:app@db:5432/app?serverVersion=16&charset=utf8"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    command: >
+      sh -lc "
+      symfony serve --no-tls --allow-http --port=8080 --listen-ip=0.0.0.0
+      "
+
+volumes:
+  pgdata:
