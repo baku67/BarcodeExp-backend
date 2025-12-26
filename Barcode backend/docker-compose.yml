@@ -47,6 +47,10 @@ services:
       APP_ENV: dev
       APP_DEBUG: "1"
       DATABASE_URL: "postgresql://app:app@db:5432/app?serverVersion=16&charset=utf8"
+      # Priorité sur .env :
+      # JWT_SECRET_KEY: /app/config/jwt/private.pem
+      # JWT_PUBLIC_KEY: /app/config/jwt/public.pem
+      # JWT_PASSPHRASE: tapassphrase
     depends_on:
       migrate:
         condition: service_completed_successfully
