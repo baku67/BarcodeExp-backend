@@ -2,12 +2,17 @@ docker compose up --build
 docker compose up -d (detached)
 
 Paire token JWT généré et gitigoné (EZ):
-php bin/console lexik:jwt:generate-keypair
+SI "An error occurred while trying to encode the JWT token. Please verify your configuration (private key/passphrase) (500 Internal Server Error)" :
+docker compose exec api sh -lc "rm -f config/jwt/private.pem config/jwt/public.pem" (suppr les keys)
+docker compose exec api php bin/console lexik:jwt:generate-keypair (regen les keys)
+
 
 
 -------------------------------------
 
 Conteneur Symfony:
+    docker compose exec api php bin/console cache:clear
+
     docker compose exec api php bin/console make:user
     docker compose exec api php bin/console doctrine:migrations:diff // générer migration
     docker compose exec api php bin/console doctrine:migrations:migrate --no-interaction // appliquer migration (déjà dans compose)
