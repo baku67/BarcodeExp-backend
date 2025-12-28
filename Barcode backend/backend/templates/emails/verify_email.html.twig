@@ -1,7 +1,110 @@
-<h2>Confirme ton email</h2>
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Vérification email</title>
+</head>
+<body style="margin:0;padding:0;background:#0b1220;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;color:#ffffff;">
+  {# Email-safe wrapper #}
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#0b1220;padding:24px 12px;">
+    <tr>
+      <td align="center">
 
-<p>Clique sur ce lien pour vérifier ton adresse :</p>
+        {# Card #}
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="560" style="width:100%;max-width:560px;border-radius:18px;overflow:hidden;border:1px solid rgba(255,255,255,.14);background:#0a2230;">
+          <tr>
+            <td style="padding:22px 22px 18px 22px;background:linear-gradient(180deg, rgba(255,255,255,.08), rgba(255,255,255,.06));">
 
-<p><a href="{{ signedUrl }}">Vérifier mon email</a></p>
+                {# ✅ Branding header (à placer ici) #}
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-bottom:14px;">
+                    <tr>
+                    <td style="vertical-align:middle;">
+                        <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                        <tr>
+                            <td style="vertical-align:middle;padding-right:10px;">
+                            <img
+                                src="{{ logoUrl }}"
+                                width="38"
+                                height="38"
+                                alt="{{ appName|default('FrigoZen') }}"
+                                style="display:block;border-radius:14px;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);padding:6px;"
+                            />
+                            </td>
+                            <td style="vertical-align:middle;">
+                            <div style="font-size:16px;font-weight:800;letter-spacing:.3px;color:rgba(255,255,255,.92);line-height:1;">
+                                {{ appName|default('FrigoZen') }}
+                            </div>
+                            <div style="margin-top:3px;font-size:12px;color:rgba(255,255,255,.65);line-height:1.2;">
+                                Ton frigo, plus zen.
+                            </div>
+                            </td>
+                        </tr>
+                        </table>
+                    </td>
+                    </tr>
+                </table>
 
-<p>Ce lien expire bientôt.</p>
+              {# Header row #}
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                <tr>
+                  <td valign="top" style="width:52px;padding-right:14px;">
+                    <div style="width:52px;height:52px;border-radius:14px;background:rgba(74,222,128,.16);border:1px solid rgba(74,222,128,.35);text-align:center;line-height:52px;">
+                      <span style="font-size:26px;">✅</span>
+                    </div>
+                  </td>
+                  <td valign="top">
+                    <div style="font-size:20px;font-weight:700;letter-spacing:.2px;margin:0;color:rgba(255,255,255,.92);">
+                      Confirme ton email
+                    </div>
+
+                    <div style="margin-top:8px;font-size:14px;line-height:1.55;color:rgba(255,255,255,.72);">
+                      Clique sur le bouton ci-dessous pour vérifier ton adresse email et activer ton compte.
+                    </div>
+
+                    <div style="margin-top:10px;font-size:13px;line-height:1.45;color:rgba(255,255,255,.72);">
+                      {% if expiresInMinutes %}
+                        ⏱️ Ce lien expire dans <strong style="color:rgba(255,255,255,.92);">{{ expiresInMinutes }} minute{{ expiresInMinutes > 1 ? 's' : '' }}</strong>.
+                      {% else %}
+                        ⏱️ Ce lien expire bientôt.
+                      {% endif %}
+                    </div>
+                  </td>
+                </tr>
+              </table>
+
+              {# CTA button #}
+              <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="margin-top:18px;">
+                <tr>
+                  <td align="left">
+                    <a href="{{ signedUrl }}"
+                       style="display:inline-block;text-decoration:none;font-weight:700;border-radius:12px;padding:12px 16px;color:#04130a;border:1px solid rgba(34,197,94,.6);background:linear-gradient(180deg, rgba(34,197,94,.95), rgba(22,163,74,.95));">
+                      Vérifier mon email
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              {# Fallback link #}
+              <div style="margin-top:16px;padding:12px 14px;border-radius:12px;border:1px dashed rgba(255,255,255,.22);background:rgba(0,0,0,.12);font-size:12px;line-height:1.5;color:rgba(255,255,255,.78);">
+                Si le bouton ne fonctionne pas, copie/colle ce lien dans ton navigateur :
+                <div style="margin-top:6px;word-break:break-all;">
+                  <a href="{{ signedUrl }}" style="color:rgba(255,255,255,.92);text-decoration:underline;">
+                    {{ signedUrl }}
+                  </a>
+                </div>
+              </div>
+
+              <div style="margin-top:14px;font-size:12px;color:rgba(255,255,255,.55);line-height:1.4;">
+                Si tu n’es pas à l’origine de cette demande, tu peux ignorer ce message.
+              </div>
+
+            </td>
+          </tr>
+        </table>
+
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
