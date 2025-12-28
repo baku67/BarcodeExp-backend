@@ -4,13 +4,18 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\UserRepository;
+use App\Security\EmailVerifier;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Bridge\Twig\Mime\TemplatedEmail;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mime\Address;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Attribute\Route;
+use SymfonyCasts\Bundle\VerifyEmail\Exception\VerifyEmailExceptionInterface;
 
 #[Route('/auth')]
 class AuthController extends AbstractController
@@ -53,13 +58,14 @@ class AuthController extends AbstractController
         UserRepository $users,
         EntityManagerInterface $em,
         UserPasswordHasherInterface $hasher,
-        JWTTokenManagerInterface $jwt
+        JWTTokenManagerInterface $jwt,
+        EmailVerifier $emailVerifier
     ): JsonResponse {
         $data = $request->toArray();
 
         $email = trim((string)($data['email'] ?? ''));
         $password = (string)($data['password'] ?? '');
-        $confirmPassword = (string)($data['confirmPassword'] ?? ''); // IMPORTANT: nom exact côté Android 
+        $confirmPassword = (string)($data['confirmPassword'] ?? '');
 
         if ($email === '' || $password === '' || $confirmPassword === '') {
             return $this->json(['message' => 'email, password, confirmPassword requis'], 400);
@@ -78,8 +84,22 @@ class AuthController extends AbstractController
         $user->setRoles(['ROLE_USER']);
         $user->setPassword($hasher->hashPassword($user, $password));
 
+        $user->setIsVerified(false);
+
         $em->persist($user);
         $em->flush();
+
+        // ✅ Envoi du mail (validation anonyme: on ajoute ?id=...)
+        $emailVerifier->sendEmailConfirmation(
+            'auth_verify_email',
+            $user,
+            (new TemplatedEmail())
+                ->from(new Address('no-reply@ton-domaine.com', 'FrigoZen'))
+                ->to($user->getEmail())
+                ->subject('Confirme ton adresse email')
+                ->htmlTemplate('emails/verify_email.html.twig'),
+            ['id' => (string) $user->getId()]
+        );
 
         $token = $jwt->create($user);
 
@@ -88,5 +108,38 @@ class AuthController extends AbstractController
             'id' => (string) $user->getId(),
             'token' => $token,
         ], 201);
+    }
+
+
+    #[Route('/verify/email', name: 'auth_verify_email', methods: ['GET'])]
+    public function verifyEmail(Request $request, UserRepository $users, EmailVerifier $emailVerifier): Response
+    {
+        $id = $request->query->get('id');
+        if (!$id) {
+            return new Response('Missing id', 400);
+        }
+
+        $user = $users->find($id);
+        if (!$user) {
+            return new Response('User not found', 404);
+        }
+
+        try {
+            $emailVerifier->handleEmailConfirmation($request, $user);
+        } catch (VerifyEmailExceptionInterface $e) {
+            return new Response('Lien invalide ou expiré', 400);
+        }
+
+        $ua = (string) $request->headers->get('User-Agent', '');
+        $isMobile = (bool) preg_match('/Android|iPhone|iPad|iPod/i', $ua);
+
+        $deepLink = sprintf('frigozen://email-verified?id=%s', $user->getId());
+        $fallbackUrl = 'http://localhost:8080'; // ou une page “télécharger l’app”
+
+        return $this->render('pages/email_verified.html.twig', [
+            'deepLink' => $deepLink,
+            'fallbackUrl' => $fallbackUrl,
+            'isMobile' => $isMobile,
+        ]);
     }
 }

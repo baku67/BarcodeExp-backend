@@ -34,6 +34,7 @@ security:
         # - { path: ^/admin, roles: ROLE_ADMIN }
         # - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/auth/(login|register)$, roles: PUBLIC_ACCESS }
+        - { path: ^/auth/verify/email$, roles: PUBLIC_ACCESS }
         - { path: ^/me$, roles: IS_AUTHENTICATED_FULLY }
         # Wildward, reste des routes sécurisées par defaut:
         - { path: ^/, roles: IS_AUTHENTICATED_FULLY }

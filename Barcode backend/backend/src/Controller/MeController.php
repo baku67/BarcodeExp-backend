@@ -25,6 +25,7 @@ class MeController extends AbstractController
             'id' => (string) $user->getId(),
             'email' => $user->getUserIdentifier(), // ou getEmail() selon ton User
             'roles' => $user->getRoles(),
+            'isVerified' => $user->isVerified(),
         ]);
     }
 
