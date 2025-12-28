@@ -1,3 +1,6 @@
+Affichage info isVerified dans Settings + si non renvoi mail confirmation 
+
+
 Fix Login/Register/deleteMe response et navigation (fonctionnent mais le front gère mal la réponse)
 
 

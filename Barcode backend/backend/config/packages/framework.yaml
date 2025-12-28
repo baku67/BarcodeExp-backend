@@ -1,12 +1,23 @@
 # see https://symfony.com/doc/current/reference/configuration/framework.html
 framework:
-    secret: '%env(APP_SECRET)%'
+    secret: "%env(APP_SECRET)%"
 
     # Note that the session will be started ONLY if you read or write from it.
     session: true
 
     #esi: true
     #fragments: true
+
+    # rate_limiter:
+    #     verify_mail_resend_by_user:
+    #         policy: "sliding_window"
+    #         limit: 5
+    #         interval: "1 hour"
+
+    #     verify_mail_resend_by_ip:
+    #         policy: "sliding_window"
+    #         limit: 20
+    #         interval: "1 hour"
 
 when@test:
     framework:

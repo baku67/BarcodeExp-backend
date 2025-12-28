@@ -35,6 +35,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?bool $isVerified = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $verificationEmailLastSentAt = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -124,6 +127,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setIsVerified(bool $isVerified): static
     {
         $this->isVerified = $isVerified;
+
+        return $this;
+    }
+
+    public function getVerificationEmailLastSentAt(): ?\DateTimeImmutable
+    {
+        return $this->verificationEmailLastSentAt;
+    }
+
+    public function setVerificationEmailLastSentAt(?\DateTimeImmutable $verificationEmailLastSentAt): static
+    {
+        $this->verificationEmailLastSentAt = $verificationEmailLastSentAt;
 
         return $this;
     }

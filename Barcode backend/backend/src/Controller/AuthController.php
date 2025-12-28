@@ -111,6 +111,47 @@ class AuthController extends AbstractController
     }
 
 
+    #[Route('/verify/resend', name: 'auth_verify_resend', methods: ['POST'])]
+    public function resendVerifyEmail(
+        EmailVerifier $emailVerifier, 
+        EntityManagerInterface $em
+    ): Response
+    {
+        $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            return new Response('', Response::HTTP_UNAUTHORIZED);
+        }
+
+        if ($user->isVerified()) {
+            return new Response('', Response::HTTP_NO_CONTENT);
+        }
+
+        // Rate limiting custom (+ RateLimiterFactory $verifyResendByUser + RateLimiterFactory $verifyResendByIp)
+        $now = new \DateTimeImmutable();
+        $last = $user->getVerificationEmailLastSentAt();
+        if ($last && $last > $now->sub(new \DateInterval('PT60S'))) {
+            // soit 204 (silencieux), soit 429 (UX)
+            return new Response('', Response::HTTP_TOO_MANY_REQUESTS);
+        }
+        $user->setVerificationEmailLastSentAt($now);
+        $em->flush();
+
+        $emailVerifier->sendEmailConfirmation(
+            'auth_verify_email',
+            $user,
+            (new TemplatedEmail())
+                ->from(new Address('no-reply@ton-domaine.com', 'FrigoZen'))
+                ->to($user->getUserIdentifier())
+                ->subject('Confirme ton adresse email - FrigoZen')
+                ->htmlTemplate('emails/verify_email.html.twig'),
+            ['id' => (string) $user->getId()]
+        );
+
+        return new Response('', Response::HTTP_NO_CONTENT);
+    }
+
+
     #[Route('/verify/email', name: 'auth_verify_email', methods: ['GET'])]
     public function verifyEmail(Request $request, UserRepository $users, EmailVerifier $emailVerifier): Response
     {
