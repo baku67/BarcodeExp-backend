@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\DBAL\Types\Types;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
@@ -37,6 +38,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $verificationEmailLastSentAt = null;
+
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $preferences = null;
+
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true)]
+    private ?\DateTimeImmutable $preferencesUpdatedAt = null;
 
     public function getId(): ?int
     {
@@ -140,6 +147,55 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
         $this->verificationEmailLastSentAt = $verificationEmailLastSentAt;
 
+        return $this;
+    }
+
+    public function getPreferences(): array
+    {
+        return $this->preferences ?? [];
+    }
+
+    public function setPreferences(array $preferences): self
+    {
+        $this->preferences = $preferences;
+        return $this;
+    }
+
+    public function getPreferencesUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->preferencesUpdatedAt;
+    }
+
+    public function setPreferencesUpdatedAt(): self
+    {
+        $this->preferencesUpdatedAt = new \DateTimeImmutable();
+        return $this;
+    }
+
+    public function getPrefTheme(): string
+    {
+        $t = $this->getPreferences()['theme'] ?? 'system';
+        return in_array($t, ['system','light','dark'], true) ? $t : 'system';
+    }
+
+    public function getPrefLang(): string
+    {
+        $l = $this->getPreferences()['lang'] ?? 'fr';
+        return is_string($l) && $l !== '' ? $l : 'fr';
+    }
+
+    public function getPrefFrigoLayout(): string
+    {
+        $v = $this->getPreferences()['frigo_layout'] ?? 'list';
+        return in_array($v, ['list','design'], true) ? $v : 'list';
+    }
+
+    public function setPref(string $key, mixed $value): self
+    {
+        $prefs = $this->getPreferences();
+        $prefs[$key] = $value;
+        $this->setPreferences($prefs);
+        $this->setPreferencesUpdatedAt();
         return $this;
     }
 }

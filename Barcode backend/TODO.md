@@ -1,4 +1,7 @@
-Affichage info isVerified dans Settings + si non renvoi mail confirmation 
+AppSettings ou AccountSettings: Light/dark, lang, préférence d'affichage du frigo(!)
+
+
+Réfléchir à: Quand on créé un compte, doit-on créé un Frigo en BDD ? Et si on rejoint un Frigo de quelqu'un via lien, doit-on switch ou delete le frigo existant ? Apres avertissement ?
 
 
 Fix Login/Register/deleteMe response et navigation (fonctionnent mais le front gère mal la réponse)
